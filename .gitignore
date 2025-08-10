@@ -1,0 +1,28 @@
+/target
+
+# Test and temporary directories
+.agentbeam-*
+.agentbeam-test*
+/tests
+**/dummy-workspace/
+
+# Internal documentation (renamed from docs)
+_docs/
+
+# Environment and config files
+.env
+.env.*
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
