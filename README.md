@@ -4,7 +4,7 @@ P2P workspace and session sharing for Claude Code developers.
 
 ## P2P for Agents (Claude Code initially)
 
-AgentBeam enables direct computer-to-computer transfer of complete Claude Code working states including conversation context, memory files, and exact codebase state. No servers, no accounts, no uploads - just direct P2P transfer using the Iroh framework.
+AgentBeam enables direct computer-to-computer transfer of complete Claude Code working states including conversation context, memory files, and exact codebase state. No servers, no accounts, no uploads - just direct P2P transfer using [Iroh](https://github.com/n0-computer/iroh).
 
 ### How P2P Transfer Works
 
@@ -172,10 +172,6 @@ large_data/
   - [x] Restore conversation context to Claude Code
   - [x] Handle session file placement correctly
   - [x] Git state restoration (branch, uncommitted changes)
-- [ ] **Discovery Integration**: Enable automatic peer finding
-  - [ ] DNS Discovery for NodeID-based connections
-  - [ ] Local Network Discovery for same-network peers
-  - [ ] Short sharing codes instead of long tickets
 - [ ] **Security Hardening**:
   - [ ] Secret scanning and warnings
   - [ ] Network security validation
@@ -185,7 +181,7 @@ large_data/
   - [ ] Connection diagnostics
   - [ ] Transfer speed optimization
 
-### 🎯 Post-Launch: Advanced Features
+### 🎯 Post-Launch: Advanced Feature **ideas**
 
 - [ ] **MCP Integration**: Tool for Claude Code to call beam commands
 - [ ] **Background Daemon**: Long-running service for instant sharing
