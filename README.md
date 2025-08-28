@@ -36,11 +36,10 @@ Direct connections can fail when both devices are behind restrictive NATs or cor
 - **Step Back Automatically**: Once direct connection succeeds, relay stops routing traffic
 - **Ensure Reliability**: ~100% connection success rate across any network configuration
 
-**Discovery (Roadmap)**: Future versions may include automatic peer discovery to:
+**(Potential Roadmap - incomplete)**:
 
-- **Find Local Peers**: Automatically detect AgentBeam users on your network
-- **NodeID-Only Sharing**: Connect using short IDs instead of long tickets
 - **Agent Swarms**: Enable multi-agent collaboration and capability sharing
+- **Iroh Gossip Protocol**: Multi-agent communication, a better A2A
 
 ## Features
 
