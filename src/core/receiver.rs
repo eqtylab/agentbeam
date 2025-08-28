@@ -2,7 +2,8 @@ use anyhow::{Context, Result};
 use colored::Colorize;
 use futures::StreamExt;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
-use iroh::{Endpoint, NodeAddr};
+use iroh::{Endpoint, NodeAddr, Watcher};
+use iroh::endpoint::ConnectionType;
 use iroh_blobs::{
     format::collection::Collection,
     get::request::get_hash_seq_and_sizes,
@@ -38,9 +39,16 @@ impl<'a> Receiver<'a> {
     ) -> Result<()> {
         println!("Connecting to peer...");
         
+        // Log that we're attempting to connect
+        tracing::info!(
+            event = "connecting",
+            role = "receiver"
+        );
+        
         let hash = ticket.hash();
         let node_addr = ticket.node_addr().clone();
-        let hash_and_format = HashAndFormat::raw(hash);
+        let format = ticket.format();
+        let hash_and_format = HashAndFormat::new(hash, format);
 
 
         // Resume Support Implementation Note:
@@ -57,6 +65,9 @@ impl<'a> Receiver<'a> {
             let stats = self.download_blob(&node_addr, hash_and_format).await?;
             
             info!("Download complete: {:?}", stats);
+            
+            // Ensure the blob is fully written before loading the collection
+            tokio::time::sleep(std::time::Duration::from_millis(500)).await;
         } else {
             println!("Collection already available locally");
         }
@@ -89,6 +100,26 @@ impl<'a> Receiver<'a> {
             .connect(node_addr.clone(), iroh_blobs::protocol::ALPN)
             .await
             .context("Failed to connect to peer")?;
+        
+        // Try to determine actual connection path
+        // Check connection type from endpoint
+        let path = if let Some(mut conn_type_watcher) = self.endpoint.conn_type(node_addr.node_id) {
+            match conn_type_watcher.get() {
+                ConnectionType::Direct(_) => "direct",
+                ConnectionType::Relay(_) => "relay",
+                ConnectionType::Mixed(_, _) => "mixed",
+                ConnectionType::None => "unknown",
+            }
+        } else {
+            "unknown"
+        };
+        
+        tracing::info!(
+            event = "connection_established",
+            node_id = %node_addr.node_id,
+            path = path,
+            role = "receiver"
+        );
         
         let (_hash_seq, sizes) = get_hash_seq_and_sizes(
             &connection,

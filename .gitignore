@@ -7,7 +7,7 @@
 **/dummy-workspace/
 
 # Internal documentation (renamed from docs)
-_docs/
+# _docs/
 
 # Environment and config files
 .env

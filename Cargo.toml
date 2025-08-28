@@ -36,11 +36,13 @@ thiserror = "2.0.12"
 # Utilities
 hex = "0.4.3"
 bytes = "1.10.1"
+dirs = "5.0"
 futures = "0.3.31"
 rand = "0.9.2"
 url = "2.5.4"
+uuid = { version = "1.10", features = ["v4"] }
 tracing = "0.1.41"
-tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+tracing-subscriber = { version = "0.3.19", features = ["env-filter", "json"] }
 
 [dev-dependencies]
 tempfile = "3.14"

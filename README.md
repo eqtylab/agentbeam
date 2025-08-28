@@ -164,14 +164,14 @@ large_data/
 
 ### 🚧 Pre-Release Phase: Production Readiness
 
-- [ ] **Real Claude Code Integration**: Remove test-mode requirement
-  - [ ] Detect active Claude Code sessions
-  - [ ] Package conversation history and memory files
-  - [ ] Integrate with Claude Code workspace detection
-- [ ] **Session Restoration**: Proper unpacking of Claude Code state
-  - [ ] Restore conversation context to Claude Code
-  - [ ] Handle session file placement correctly
-  - [ ] Git state restoration (branch, uncommitted changes)
+- [x] **Real Claude Code Integration**: Remove test-mode requirement
+  - [x] Detect active Claude Code sessions
+  - [x] Package conversation history and memory files
+  - [x] Integrate with Claude Code workspace detection
+- [x] **Session Restoration**: Proper unpacking of Claude Code state
+  - [x] Restore conversation context to Claude Code
+  - [x] Handle session file placement correctly
+  - [x] Git state restoration (branch, uncommitted changes)
 - [ ] **Discovery Integration**: Enable automatic peer finding
   - [ ] DNS Discovery for NodeID-based connections
   - [ ] Local Network Discovery for same-network peers
@@ -222,16 +222,3 @@ Key components:
 - `FileCollector` - Handles workspace file collection and bundling
 - `ProviderMonitor` - Tracks upload progress and transfer completion
 - `Receiver` - Manages downloads with resume support
-
-## License
-
-MIT
-
-## Contributing
-
-Contributions welcome! Please ensure:
-
-- Code follows Rust conventions
-- Tests pass (`cargo test`)
-- Documentation is updated
-- Commits are descriptive

@@ -1,19 +1,21 @@
 use anyhow::Result;
 use colored::Colorize;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
+use iroh::{Endpoint, endpoint::ConnectionType, Watcher};
 use iroh_blobs::provider::Event;
 use std::collections::{HashMap, HashSet};
 use tokio::sync::mpsc;
-use tracing::{debug, error, trace};
+use tracing::{debug, trace};
 
 pub struct ProviderMonitor<'a> {
     receiver: mpsc::Receiver<Event>,
     mp: Option<&'a MultiProgress>,
+    endpoint: &'a Endpoint,
 }
 
 impl<'a> ProviderMonitor<'a> {
-    pub fn new(receiver: mpsc::Receiver<Event>, mp: Option<&'a MultiProgress>) -> Self {
-        Self { receiver, mp }
+    pub fn new(receiver: mpsc::Receiver<Event>, mp: Option<&'a MultiProgress>, endpoint: &'a Endpoint) -> Self {
+        Self { receiver, mp, endpoint }
     }
 
     pub async fn monitor_until_complete(&mut self) -> Result<()> {
@@ -26,11 +28,31 @@ impl<'a> ProviderMonitor<'a> {
             
             match event {
                 Event::ClientConnected {
+                    connection_id: _,
                     node_id,
                     permitted,
-                    ..
                 } => {
                     println!("{} Peer {} connected", "✓".green(), node_id);
+                    
+                    // Get actual connection type from endpoint
+                    let path = if let Some(mut conn_type_watcher) = self.endpoint.conn_type(node_id) {
+                        match conn_type_watcher.get() {
+                            ConnectionType::Direct(_) => "direct",
+                            ConnectionType::Relay(_) => "relay",
+                            ConnectionType::Mixed(_, _) => "mixed",
+                            ConnectionType::None => "unknown",
+                        }
+                    } else {
+                        "unknown"
+                    };
+                    
+                    tracing::info!(
+                        event = "connection_established",
+                        node_id = %node_id,
+                        path = path,
+                        role = "sender"
+                    );
+                    
                     permitted.send(true).await.ok();
                     connected = true;
                 }
@@ -91,14 +113,7 @@ impl<'a> ProviderMonitor<'a> {
                     }
                     
                     debug!("Transfer {} completed", request_id);
-                    
-                    if active_transfers.is_empty() && connected {
-                        println!(
-                            "{} All transfers complete. Safe to close.",
-                            "✓".green()
-                        );
-                        return Ok(());
-                    }
+                    // Don't exit here - wait for ConnectionClosed event
                 }
                 
                 Event::TransferAborted {
@@ -115,8 +130,10 @@ impl<'a> ProviderMonitor<'a> {
                 }
                 
                 Event::ConnectionClosed { .. } => {
-                    if active_transfers.is_empty() {
-                        println!("{} Connection closed. Transfer complete.", "✓".green());
+                    if connected {
+                        println!("{} Connection closed by receiver.", "✓".green());
+                        // Give a brief moment for cleanup
+                        tokio::time::sleep(std::time::Duration::from_millis(500)).await;
                         return Ok(());
                     }
                 }

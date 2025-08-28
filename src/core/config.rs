@@ -66,4 +66,6 @@ pub struct BeamMetadata {
     pub beam_version: String,
     pub total_size: u64,
     pub file_count: usize,
+    pub claude_session: Option<crate::core::claude_session::ClaudeSessionInfo>,
+    pub git_context: Option<crate::core::claude_session::GitContext>,
 }

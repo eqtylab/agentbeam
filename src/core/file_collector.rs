@@ -85,9 +85,16 @@ impl FileCollector {
             total_size += file_size;
 
             debug!("Adding file: {} ({}bytes)", relative_path, file_size);
+            
+            // Ensure absolute path for add_path_with_opts
+            let abs_path = if file_path.is_absolute() {
+                file_path
+            } else {
+                std::env::current_dir()?.join(&file_path)
+            };
 
             let add_options = AddPathOptions {
-                path: file_path,
+                path: abs_path,
                 mode: ImportMode::TryReference,
                 format: BlobFormat::Raw,
             };
@@ -150,16 +157,22 @@ impl FileCollector {
         });
 
         for (i, (name, hash)) in collection.iter().enumerate() {
-            if name == ".agentbeam-metadata.json" {
-                continue;
-            }
+            // Don't skip metadata - we need it for restoration
+            // if name == ".agentbeam-metadata.json" {
+            //     continue;
+            // }
 
             if let Some(ref pb) = pb {
                 pb.set_position(i as u64);
                 pb.set_message(format!("Exporting {}", name));
             }
 
-            let target_path = target_dir.join(name);
+            let target_path = if target_dir.is_absolute() {
+                target_dir.join(name)
+            } else {
+                std::env::current_dir()?.join(target_dir).join(name)
+            };
+            
             if let Some(parent) = target_path.parent() {
                 std::fs::create_dir_all(parent)?;
             }
