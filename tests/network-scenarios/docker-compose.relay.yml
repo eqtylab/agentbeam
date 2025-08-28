@@ -1,0 +1,40 @@
+# Test relay-based connection between isolated containers
+# Usage: docker-compose -f docker-compose.relay.yml up
+
+version: "3.8"
+
+services:
+  sender:
+    build:
+      context: ../../
+      dockerfile: Dockerfile
+    container_name: agentbeam_sender_relay
+    command: ["./target/release/agentbeam", "beam-session", "--test-mode", "-y"]
+    networks:
+      - sender-net
+    environment:
+      - RUST_LOG=agentbeam=info
+    volumes:
+      - ./logs:/logs
+
+  receiver:
+    build:
+      context: ../../
+      dockerfile: Dockerfile
+    container_name: agentbeam_receiver_relay  
+    depends_on:
+      - sender
+    command: ["sh", "-c", "sleep 5 && ./target/release/agentbeam receive $TICKET --target /received"]
+    networks:
+      - receiver-net
+    environment:
+      - RUST_LOG=agentbeam=info
+    volumes:
+      - ./received:/received
+
+# Separate networks to force relay usage
+networks:
+  sender-net:
+    driver: bridge
+  receiver-net:
+    driver: bridge

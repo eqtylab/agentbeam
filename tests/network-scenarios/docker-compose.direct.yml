@@ -1,0 +1,37 @@
+# Test direct P2P connection between containers on same network
+# Usage: docker-compose -f docker-compose.direct.yml up
+
+version: "3.8"
+
+services:
+  sender:
+    build:
+      context: ../../
+      dockerfile: Dockerfile
+    container_name: agentbeam_sender_direct
+    command: ["./target/release/agentbeam", "beam-session", "--test-mode", "--no-relay", "-y"]
+    networks:
+      - agentbeam-net
+    environment:
+      - RUST_LOG=agentbeam=info
+    volumes:
+      - ./logs:/logs
+
+  receiver:
+    build:
+      context: ../../
+      dockerfile: Dockerfile  
+    container_name: agentbeam_receiver_direct
+    depends_on:
+      - sender
+    command: ["sh", "-c", "sleep 5 && ./target/release/agentbeam receive $TICKET --target /received"]
+    networks:
+      - agentbeam-net
+    environment:
+      - RUST_LOG=agentbeam=info
+    volumes:
+      - ./received:/received
+
+networks:
+  agentbeam-net:
+    driver: bridge
