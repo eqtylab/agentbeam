@@ -81,10 +81,11 @@ impl ClaudeContext {
         info!("Restoring Claude session for receiver");
         
         // Generate project slug for receiver's absolute path
+        // Canonicalize to normalize the path (remove ./ and ../ components)
         let abs_target = if target_dir.is_absolute() {
-            target_dir.to_path_buf()
+            target_dir.canonicalize()?
         } else {
-            std::env::current_dir()?.join(target_dir)
+            std::env::current_dir()?.join(target_dir).canonicalize()?
         };
         let receiver_slug = Self::path_to_slug(&abs_target);
         let home = dirs::home_dir().context("Failed to get home directory")?;
