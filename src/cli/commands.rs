@@ -155,12 +155,12 @@ async fn beam_session(config: BeamConfig, workspace_path: Option<PathBuf>, skip_
     let (workspace_dir, session_dir, _guard) = if config.test_mode {
         println!("{} TEST MODE: Using dummy data", "⚠️".yellow());
         let dummy = DummyWorkspace::create(None)?;
-        println!("✓ Generated test workspace with {} files", 
+        println!("✓ Generated test workspace with {} files",
             std::fs::read_dir(&dummy.workspace_dir)?.count());
-        
+
         let workspace = dummy.workspace_dir.clone();
         let session = dummy.session_dir.clone();
-        
+
         (workspace, session, Some(dummy))
     } else {
         let workspace = workspace_path
@@ -169,7 +169,10 @@ async fn beam_session(config: BeamConfig, workspace_path: Option<PathBuf>, skip_
         let session = PathBuf::from(".claude-code-session");
         (workspace, session, None)
     };
-    
+
+    // Ensure .agentbeam-* is in .gitignore
+    ensure_gitignore_has_agentbeam_pattern(&workspace_dir)?;
+
     if !config.test_mode && !skip_confirm {
         println!("{} This will share:", "⚠️".yellow());
         println!("  - Your entire workspace (respecting .gitignore/.beamignore)");
@@ -387,6 +390,46 @@ async fn receive_session(ticket_str: String, target_dir: PathBuf, config: BeamCo
     
     agent_beam.shutdown().await?;
     
+    Ok(())
+}
+
+fn ensure_gitignore_has_agentbeam_pattern(workspace_dir: &PathBuf) -> Result<()> {
+    let gitignore_path = workspace_dir.join(".gitignore");
+    let pattern = ".agentbeam-*";
+
+    // Read existing gitignore or create empty content
+    let mut content = if gitignore_path.exists() {
+        std::fs::read_to_string(&gitignore_path)?
+    } else {
+        String::new()
+    };
+
+    // Check if pattern already exists
+    let has_pattern = content.lines().any(|line| {
+        let trimmed = line.trim();
+        trimmed == pattern || trimmed == ".agentbeam-*/"
+    });
+
+    if !has_pattern {
+        // Add the pattern
+        if !content.is_empty() && !content.ends_with('\n') {
+            content.push('\n');
+        }
+
+        // Add a comment if this is the first entry or after existing content
+        if content.is_empty() {
+            content.push_str("# AgentBeam temporary directories\n");
+        } else {
+            content.push_str("\n# AgentBeam temporary directories\n");
+        }
+        content.push_str(pattern);
+        content.push('\n');
+
+        // Write back to file
+        std::fs::write(&gitignore_path, content)?;
+        println!("✓ Added {} to .gitignore", pattern);
+    }
+
     Ok(())
 }
 
