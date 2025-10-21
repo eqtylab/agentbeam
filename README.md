@@ -12,6 +12,15 @@ P2P workspace and session sharing for Claude Code developers.
 
 AgentBeam enables direct computer-to-computer transfer of complete Claude Code working states including conversation context, memory files, and exact codebase state. No servers, no accounts, no uploads - just direct P2P transfer using [Iroh](https://github.com/n0-computer/iroh).
 
+```
+> charlie beams his current session
+... gets a ticket
+... shares it with alice
+
+> alice receives charlie's claude session and codebase
+... alice can run `claude --continue` to pick up right where charlie left off
+```
+
 ## Installation
 
 ```bash
