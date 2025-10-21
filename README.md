@@ -67,6 +67,8 @@ agentbeam receive <ticket>
 
 # Specify target directory
 agentbeam receive <ticket> --target /path/to/destination
+
+# now you can `claude --continue` in that received codebase.
 ```
 
 ### How P2P Transfer Works
