@@ -42,7 +42,14 @@ impl FileCollector {
                     .to_str()
                     .context("Path contains invalid UTF-8")?
                     .replace('\\', "/");
-                
+
+                // Always exclude .agentbeam-* directories and their contents
+                // These are our temporary directories and should never be transferred
+                if relative_str.starts_with(".agentbeam-") || relative_str.contains("/.agentbeam-") {
+                    trace!("Excluding agentbeam temp file: {}", relative_str);
+                    continue;
+                }
+
                 files.push((relative_str, path.to_owned()));
             }
         }
@@ -93,16 +100,9 @@ impl FileCollector {
                 std::env::current_dir()?.join(&file_path)
             };
 
-            // Use Copy mode for files that might be actively changing
-            // This includes Claude session files (.jsonl) and any file in .agentbeam/
-            let import_mode = if relative_path.ends_with(".jsonl")
-                || relative_path.starts_with(".agentbeam/")
-                || relative_path.contains("claude-session") {
-                debug!("Using Copy mode for potentially changing file: {}", relative_path);
-                ImportMode::Copy
-            } else {
-                ImportMode::TryReference
-            };
+            // For now, use TryReference for all files since we've excluded
+            // the problematic .agentbeam-* directories
+            let import_mode = ImportMode::TryReference;
 
             let add_options = AddPathOptions {
                 path: abs_path,
