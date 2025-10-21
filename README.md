@@ -1,3 +1,9 @@
+<p align="center">
+  <picture>
+    <img src="assets/agent-beam.png" alt="Cupcake logo" width="90%">
+  </picture>
+</p>
+
 # AgentBeam
 
 P2P workspace and session sharing for Claude Code developers.
