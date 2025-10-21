@@ -85,7 +85,7 @@ impl FileCollector {
             total_size += file_size;
 
             debug!("Adding file: {} ({}bytes)", relative_path, file_size);
-            
+
             // Ensure absolute path for add_path_with_opts
             let abs_path = if file_path.is_absolute() {
                 file_path
@@ -93,9 +93,20 @@ impl FileCollector {
                 std::env::current_dir()?.join(&file_path)
             };
 
+            // Use Copy mode for files that might be actively changing
+            // This includes Claude session files (.jsonl) and any file in .agentbeam/
+            let import_mode = if relative_path.ends_with(".jsonl")
+                || relative_path.starts_with(".agentbeam/")
+                || relative_path.contains("claude-session") {
+                debug!("Using Copy mode for potentially changing file: {}", relative_path);
+                ImportMode::Copy
+            } else {
+                ImportMode::TryReference
+            };
+
             let add_options = AddPathOptions {
                 path: abs_path,
-                mode: ImportMode::TryReference,
+                mode: import_mode,
                 format: BlobFormat::Raw,
             };
 
